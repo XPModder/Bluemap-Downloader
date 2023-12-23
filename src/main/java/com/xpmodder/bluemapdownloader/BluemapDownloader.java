@@ -55,7 +55,7 @@ public class BluemapDownloader extends Application {
     }
 
 
-    public void startDownload(String server, String map, int zoom, int width, int height, int requests, int requestGap, boolean stitch){
+    public void startDownload(String server, String map, int zoom, int width, int height, int requests, int requestGap, boolean stitch, boolean allDownloaded){
 
         int finalWidth1 = width;
         int finalHeight1 = height;
@@ -98,7 +98,14 @@ public class BluemapDownloader extends Application {
 
             Platform.runLater(() -> {
 
-                BufferedImage bufferedImage = new BufferedImage(finalWidth * 500, finalHeight * 500, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage bufferedImage;
+
+                if(allDownloaded){
+                    bufferedImage = new BufferedImage(mainGrid.getColumnCount() * 500, mainGrid.getRowCount() * 500, BufferedImage.TYPE_INT_ARGB);
+                }
+                else {
+                    bufferedImage = new BufferedImage(finalWidth * 500, finalHeight * 500, BufferedImage.TYPE_INT_ARGB);
+                }
 
                 int startCol = (mainGrid.getColumnCount() - finalWidth) / 2;
                 int startRow = (mainGrid.getRowCount() - finalHeight) / 2;
@@ -107,7 +114,7 @@ public class BluemapDownloader extends Application {
 
                     ImageView view = (ImageView) node;
 
-                    if(GridPane.getColumnIndex(node) < startCol || GridPane.getRowIndex(node) < startRow){
+                    if((GridPane.getColumnIndex(node) < startCol || GridPane.getRowIndex(node) < startRow) && !allDownloaded){
                         continue;
                     }
 
@@ -203,6 +210,12 @@ public class BluemapDownloader extends Application {
 
         CheckBox stitchCheck = new CheckBox("Stitch to single Image");
         stitchCheck.setSelected(true);
+        Region spacer = new Region();
+        CheckBox allCheck = new CheckBox("Stitch ALL downloaded");
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox checkboxes = new HBox(stitchCheck, spacer, allCheck);
+        checkboxes.setSpacing(7.5d);
+
 
         startButton = new Button("Start Download");
         startButton.setOnMouseClicked(event -> {
@@ -218,8 +231,9 @@ public class BluemapDownloader extends Application {
             int requests = numRequests.getValue();
             int requestGap = requestPause.getValue();
             boolean stitch = stitchCheck.isSelected();
+            boolean allDownloaded = allCheck.isSelected();
 
-            Thread workThread = new Thread(() -> startDownload(server, map, zoom, width, height, requests, requestGap, stitch));
+            Thread workThread = new Thread(() -> startDownload(server, map, zoom, width, height, requests, requestGap, stitch, allDownloaded));
             workThread.start();
 
             startButton.setDisable(true);
@@ -228,7 +242,7 @@ public class BluemapDownloader extends Application {
 
         progressBar.setMaxWidth(Double.MAX_VALUE);
 
-        VBox settingsBox = new VBox(settingsLabel, serverBox, mapBox, zoomBox, sizeBox, numRequestBox, requestPauseBox, stitchCheck, startButton, progressBar);
+        VBox settingsBox = new VBox(settingsLabel, serverBox, mapBox, zoomBox, sizeBox, numRequestBox, requestPauseBox, checkboxes, startButton, progressBar);
         settingsBox.setSpacing(10.0d);
         settingsBox.setBorder(new Border(new BorderStroke(null, null, null, new BorderWidths(5.0d))));
         settingsBox.fillWidthProperty().set(true);
