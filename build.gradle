@@ -4,10 +4,11 @@ plugins {
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'org.beryx.jlink' version '2.25.0'
+    id "com.github.johnrengelman.shadow" version "7.1.0"
 }
 
 group 'com.xpmodder'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -26,18 +27,33 @@ tasks.withType(JavaCompile) {
 
 application {
     mainModule = 'com.xpmodder.bluemapdownloader'
-    mainClass = 'com.xpmodder.bluemapdownloader.HelloApplication'
+    mainClass = 'com.xpmodder.bluemapdownloader.Main'
 }
 
 javafx {
     version = '17.0.6'
-    modules = ['javafx.controls', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.fxml', "javafx.swing"]
 }
+
+
 
 dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    "javax.imageio.ImageIO;"
+
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:win"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:linux"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:mac"
+
+    runtimeOnly "org.openjfx:javafx-swing:$javafx.version:win"
+    runtimeOnly "org.openjfx:javafx-swing:$javafx.version:linux"
+    runtimeOnly "org.openjfx:javafx-swing:$javafx.version:mac"
+
+    runtimeOnly "org.openjfx:javafx-controls:$javafx.version:win"
+    runtimeOnly "org.openjfx:javafx-controls:$javafx.version:linux"
+    runtimeOnly "org.openjfx:javafx-controls:$javafx.version:mac"
 }
 
 test {
@@ -54,4 +70,16 @@ jlink {
 
 jlinkZip {
     group = 'distribution'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+}
+
+tasks {
+    shadowJar {
+        exclude("module-info.class")
+    }
 }
